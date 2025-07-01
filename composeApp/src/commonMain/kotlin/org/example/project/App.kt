@@ -1,5 +1,9 @@
 package org.example.project
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -62,6 +66,32 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Preview
 fun App(vm: VM = viewModel { VM() }, root: DefaultRootComponent) {
     MaterialTheme {
+//        Children(
+//            stack = root.childStack,
+//            modifier = Modifier.fillMaxSize(),
+////            animation = stackAnimation { child, otherChild, direction ->
+////                when (child.instance) {
+////                    is DetailImageComponent, is ScreenHomeComponent -> null
+////                    else -> slide()
+////                }
+////            }
+//        ) { child ->
+//            // Render your screens based on child.instance
+//            when (val component = child.instance) {
+//                is ScreenHomeComponent -> {
+//                    // Always render home screen as base layer
+//                    HomeScreen(component, vm)
+//                }
+//
+//                is DetailImageComponent -> {
+//                    DetailImageScreen(component.locationInfo, component, component.pos)
+//                }
+//
+//                is DetailPageComponent -> {
+//                    DetailPage(component.locationInfo,component)
+//                }
+//            }
+//        }
         val childStack by root.childStack.subscribeAsState()
         Box(modifier = Modifier.fillMaxSize()) {
             // Render all screens, with overlays on top
@@ -80,7 +110,19 @@ fun App(vm: VM = viewModel { VM() }, root: DefaultRootComponent) {
                     }
 
                     is DetailPageComponent -> {
-                        DetailPage(component.locationInfo,component)
+                        AnimatedVisibility(
+                            visible = child == childStack.active, // 🔥 this MUST be dynamic!
+                            enter = slideInHorizontally(
+                                initialOffsetX = { it }, // slide in from right
+                                animationSpec = tween(300)
+                            ),
+                            exit = slideOutHorizontally(
+                                targetOffsetX = { -it }, // slide out to left
+                                animationSpec = tween(300)
+                            )
+                        ) {
+                            DetailPage(component.locationInfo, component)
+                        }
                     }
                 }
             }
