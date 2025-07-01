@@ -25,10 +25,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,12 +37,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.path
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
+import org.example.project.component.DetailPageComponent
 import org.example.project.data.LocationInfo
 import kotlin.math.max
 import kotlin.math.min
@@ -61,22 +68,14 @@ data class TabItem(
 @Composable
 fun DetailPage(
     locationInfo: LocationInfo,
-    onGoBack: () -> Unit
+    component: DetailPageComponent
 ) {
-//    AsyncImage(
-//        model = locationInfo.coverImage.orEmpty(),
-//        contentDescription = "${locationInfo.name} image",
-//        contentScale = ContentScale.Crop,
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .clip(MaterialTheme.shapes.medium)
-//    )
-    RestaurantMainPage()
+    RestaurantMainPage(locationInfo, component)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RestaurantMainPage() {
+fun RestaurantMainPage(locationInfo: LocationInfo, component: DetailPageComponent) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     val listState = rememberLazyListState()
     val density = LocalDensity.current
@@ -114,7 +113,7 @@ fun RestaurantMainPage() {
     // Calculate header height based on scroll
     val currentHeaderHeight = max(toolbarHeightPx, headerHeightPx - scrollOffset)
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize()
@@ -125,14 +124,12 @@ fun RestaurantMainPage() {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(headerHeight)
-                        .background(Color(0xFFF8F8F8))
                 ) {
                     // Restaurant Image with parallax effect
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(240.dp)
-                            .padding(16.dp)
+                            .height(300.dp)
                             .graphicsLayer {
                                 // Parallax effect - image moves slower than scroll
                                 translationY = scrollOffset * 0.5f
@@ -146,16 +143,57 @@ fun RestaurantMainPage() {
                             // Restaurant image placeholder
                             Box(
                                 modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(Color(0xFF8B4513)),
+                                    .fillMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    "Restaurant Interior",
-                                    color = Color.White,
-                                    fontSize = 16.sp,
-                                    modifier = Modifier.alpha(1f - scrollProgress)
+                                AsyncImage(
+                                    model = locationInfo.coverImage.orEmpty(),
+                                    contentDescription = "${locationInfo.name} image",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(MaterialTheme.shapes.medium)
+                                        .alpha(1f - scrollProgress)
                                 )
+                                Icon(
+                                    imageVector = ImageVector.Builder(
+                                        name = "Close",
+                                        defaultWidth = 32.dp,
+                                        defaultHeight = 32.dp,
+                                        viewportWidth = 32f,
+                                        viewportHeight = 32f
+                                    ).apply {
+                                        path(fill = SolidColor(Color.White)) {
+                                            moveTo(19f, 6.41f)
+                                            lineTo(17.59f, 5f)
+                                            lineTo(12f, 10.59f)
+                                            lineTo(6.41f, 5f)
+                                            lineTo(5f, 6.41f)
+                                            lineTo(10.59f, 12f)
+                                            lineTo(5f, 17.59f)
+                                            lineTo(6.41f, 19f)
+                                            lineTo(12f, 13.41f)
+                                            lineTo(17.59f, 19f)
+                                            lineTo(19f, 17.59f)
+                                            lineTo(13.41f, 12f)
+                                            close()
+                                        }
+                                    }.build(),
+                                    contentDescription = "Close",
+                                    tint = Color.White, // Add this line
+                                    modifier = Modifier.padding(top = 64.dp, start = 32.dp)
+                                        .size(32.dp)
+                                        .alpha(1f - scrollProgress).align(Alignment.TopStart)
+                                        .clickable {
+                                            component.goBack()
+                                        }
+                                )
+//                                Text(
+//                                    "Restaurant Interior",
+//                                    color = Color.White,
+//                                    fontSize = 16.sp,
+//                                    modifier = Modifier.alpha(1f - scrollProgress)
+//                                )
                             }
                         }
                     }
@@ -283,7 +321,10 @@ fun RestaurantMainPage() {
                             ) {
                                 Text(
                                     tab,
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                    modifier = Modifier.padding(
+                                        horizontal = 16.dp,
+                                        vertical = 8.dp
+                                    ),
                                     color = if (isSelected) Color.White else Color.Black,
                                     fontSize = 14.sp
                                 )
@@ -304,57 +345,57 @@ fun RestaurantMainPage() {
         }
 
         // Collapsing Toolbar
-        TopAppBar(
-            title = {
-                Text(
-                    "MoonBean's Coffee",
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.alpha(scrollProgress)
-                )
-            },
-            navigationIcon = {
-                IconButton(
-                    onClick = { },
-                    modifier = Modifier
-                        .background(
-                            Color.White.copy(alpha = 0.9f - (scrollProgress * 0.4f)),
-                            CircleShape
-                        )
-                        .size(40.dp)
-                ) {
-//                    Icon(
-//                        Icons.Default.ArrowBack,
-//                        contentDescription = "Back",
-//                        tint = Color.Black
-//                    )
-                }
-            },
-            actions = {
-                IconButton(
-                    onClick = { },
-                    modifier = Modifier
-                        .background(
-                            Color.White.copy(alpha = 0.9f - (scrollProgress * 0.4f)),
-                            CircleShape
-                        )
-                        .size(40.dp)
-                ) {
-//                    Icon(
-//                        Icons.Default.FavoriteBorder,
-//                        contentDescription = "Favorite",
-//                        tint = Color.Black
-//                    )
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color(0xFF8B4513).copy(alpha = scrollProgress)
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(with(density) { currentHeaderHeight.toDp() })
-        )
+//        TopAppBar(
+//            title = {
+//                Text(
+//                    "MoonBean's Coffee",
+//                    color = Color.White,
+//                    fontSize = 18.sp,
+//                    fontWeight = FontWeight.Bold,
+//                    modifier = Modifier.alpha(scrollProgress)
+//                )
+//            },
+//            navigationIcon = {
+//                IconButton(
+//                    onClick = { },
+//                    modifier = Modifier
+//                        .background(
+//                            Color.White.copy(alpha = 0.9f - (scrollProgress * 0.4f)),
+//                            CircleShape
+//                        )
+//                        .size(40.dp)
+//                ) {
+////                    Icon(
+////                        Icons.Default.ArrowBack,
+////                        contentDescription = "Back",
+////                        tint = Color.Black
+////                    )
+//                }
+//            },
+//            actions = {
+//                IconButton(
+//                    onClick = { },
+//                    modifier = Modifier
+//                        .background(
+//                            Color.White.copy(alpha = 0.9f - (scrollProgress * 0.4f)),
+//                            CircleShape
+//                        )
+//                        .size(40.dp)
+//                ) {
+////                    Icon(
+////                        Icons.Default.FavoriteBorder,
+////                        contentDescription = "Favorite",
+////                        tint = Color.Black
+////                    )
+//                }
+//            },
+//            colors = TopAppBarDefaults.topAppBarColors(
+//                containerColor = Color(0xFF8B4513).copy(alpha = scrollProgress)
+//            ),
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(with(density) { currentHeaderHeight.toDp() })
+//        )
     }
 }
 

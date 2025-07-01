@@ -80,9 +80,7 @@ fun App(vm: VM = viewModel { VM() }, root: DefaultRootComponent) {
                     }
 
                     is DetailPageComponent -> {
-                        DetailPage(component.locationInfo) {
-
-                        }
+                        DetailPage(component.locationInfo,component)
                     }
                 }
             }
