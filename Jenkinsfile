@@ -1,13 +1,22 @@
 pipeline {
     agent any
 
+
     environment {
         ANDROID_HOME = "/Users/jenkins/Library/Android/sdk"
-        JAVA_HOME = "/Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home"
+	JAVA_HOME = "/usr/local/Cellar/openjdk@17/17.0.17/libexec/openjdk.jdk/Contents/Home"
         GRADLE_OPTS = "-Xms512m -Xmx2048m"
     }
 
     stages {
+
+	stage('Env check') {
+    		steps {
+        	sh "java -version"
+        	sh "echo JAVA_HOME=$JAVA_HOME"
+    		}
+	}
+
         stage('Checkout') {
             steps {
                 checkout scm
