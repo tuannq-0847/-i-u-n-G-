@@ -1,9 +1,13 @@
 pipeline {
     agent any
 
+    tools {
+    	jdk 'jdk17'
+    }
+
+
     environment {
         ANDROID_HOME = "/Users/jenkins/Library/Android/sdk"
-        JAVA_HOME = "/usr/local/Cellar/openjdk/25.0.1/libexec/openjdk.jdk/Contents/Home"
         GRADLE_OPTS = "-Xms512m -Xmx2048m"
     }
 
