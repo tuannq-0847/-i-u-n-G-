@@ -11,6 +11,14 @@ pipeline {
         GRADLE_OPTS = "-Xms512m -Xmx2048m"
     }
 
+stage('Env check') {
+    steps {
+        sh "java -version"
+        sh "echo JAVA_HOME=$JAVA_HOME"
+    }
+}
+
+
     stages {
         stage('Checkout') {
             steps {
